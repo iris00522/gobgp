@@ -169,6 +169,8 @@ const (
 	EC_SUBTYPE_ESI_LABEL    ExtendedCommunityAttrSubType = 0x01 // EC_TYPE: 0x06
 	EC_SUBTYPE_ES_IMPORT    ExtendedCommunityAttrSubType = 0x02 // EC_TYPE: 0x06
 	EC_SUBTYPE_ROUTER_MAC   ExtendedCommunityAttrSubType = 0x03 // EC_TYPE: 0x06
+	EC_SUBTYPE_E_TREE       ExtendedCommunityAttrSubType = 0x05 // EC_TYPE: 0x06
+	EC_SUBTYPE_DF_ELECTION  ExtendedCommunityAttrSubType = 0x06 // EC_TYPE: 0x06
 
 	EC_SUBTYPE_UUID_BASED_RT ExtendedCommunityAttrSubType = 0x11
 )
@@ -10793,6 +10795,54 @@ func NewRoutersMacExtended(mac string) *RouterMacExtended {
 	}
 }
 
+type DFElectionExtended struct {
+	DFAlgorithm uint8
+	Bitmap uint16
+}
+
+func (e *DFElectionExtended) Serialize() ([]byte, error) {
+	buf := make([]byte, 8)
+	buf[0] = byte(EC_TYPE_EVPN)
+	buf[1] = byte(EC_SUBTYPE_DF_ELECTION)
+	buf[2] = byte(e.DFAlgorithm & 0x1f)
+	buf[3] = byte((e.Bitmap >> 16) & 0xff)
+	buf[4] = byte((e.Bitmap >> 8) & 0xff)
+	return buf, nil
+}
+
+func (e *DFElectionExtended) String() string {
+	buf := bytes.NewBuffer(make([]byte, 0, 32))
+	buf.WriteString(fmt.Sprintf("DF Algorithm: %d ", e.DFAlgorithm))
+	buf.WriteString(fmt.Sprintf("DF Bitmap: %d", e.Bitmap))
+	return buf.String()
+}
+
+func (e *DFElectionExtended) MarshalJSON() ([]byte, error) {
+	t, s := e.GetTypes()
+	return json.Marshal(struct {
+		Type    ExtendedCommunityAttrType    `json:"type"`
+		Subtype ExtendedCommunityAttrSubType `json:"subtype"`
+		DFalgorithm uint8                    `json:"DF_algorithm"`
+		Bitmap uint16                        `json:"bitmap"`
+	}{
+		Type:     t,
+		Subtype:  s,
+		DFalgorithm: e.DFAlgorithm,
+		Bitmap: e.Bitmap,
+	})
+}
+
+func (e *DFElectionExtended) GetTypes() (ExtendedCommunityAttrType, ExtendedCommunityAttrSubType) {
+	return EC_TYPE_EVPN, EC_SUBTYPE_DF_ELECTION
+}
+
+func NewDFElectiosExtended(alg uint8, bitmap uint16) *DFElectionExtended {
+	return &DFElectionExtended{
+		DFAlgorithm: alg,
+		Bitmap: bitmap,
+	}
+}
+
 func parseEvpnExtended(data []byte) (ExtendedCommunityInterface, error) {
 	if ExtendedCommunityAttrType(data[0]) != EC_TYPE_EVPN {
 		return nil, NewMessageError(BGP_ERROR_UPDATE_MESSAGE_ERROR, BGP_ERROR_SUB_MALFORMED_ATTRIBUTE_LIST, nil, fmt.Sprintf("ext comm type is not EC_TYPE_EVPN: %d", data[0]))
@@ -10826,6 +10876,15 @@ func parseEvpnExtended(data []byte) (ExtendedCommunityInterface, error) {
 	case EC_SUBTYPE_ROUTER_MAC:
 		return &RouterMacExtended{
 			Mac: net.HardwareAddr(data[2:8]),
+		}, nil
+	case EC_SUBTYPE_DF_ELECTION:
+		var algorithm uint8
+		var bitmap uint16
+		algorithm = uint8(data[2])
+		bitmap = uint16(data[3])<<8 | uint16(data[4])
+		return &DFElectionExtended{
+			DFAlgorithm: algorithm,
+			Bitmap: bitmap,
 		}, nil
 	}
 	return nil, NewMessageError(BGP_ERROR_UPDATE_MESSAGE_ERROR, BGP_ERROR_SUB_MALFORMED_ATTRIBUTE_LIST, nil, fmt.Sprintf("unknown evpn subtype: %d", subType))
@@ -13375,6 +13434,9 @@ func (e *RouterMacExtended) Flat() map[string]string {
 	return map[string]string{}
 }
 
+func (e *DFElectionExtended) Flat() map[string]string {
+	return map[string]string{}
+}
 func (e *TrafficRateExtended) Flat() map[string]string {
 	return map[string]string{}
 }

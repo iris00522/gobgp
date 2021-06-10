@@ -72,6 +72,7 @@ It has these top-level messages:
 	RedirectIPv4AddressSpecificExtended
 	RedirectFourOctetAsSpecificExtended
 	TrafficRemarkExtended
+	DFElectionExtended
 	UnknownExtended
 	ExtendedCommunitiesAttribute
 	As4PathAttribute
@@ -2291,6 +2292,30 @@ func (m *TrafficRemarkExtended) GetDscp() uint32 {
 	return 0
 }
 
+type DFElectionExtended struct {
+	DFAlgorithm    uint32   `protobuf:"varint,1,opt,name=DF_algorithm,json=DF_algorithm" json:"DF_algorithm,omitempty"`
+	Bitmap         uint32   `protobuf:"varint,2,opt,name=bitmap,json=bitmap" json:"bitmap,omitempty"`
+}
+
+func (m *DFElectionExtended) Reset()                    { *m = DFElectionExtended{} }
+func (m *DFElectionExtended) String() string            { return proto.CompactTextString(m) }
+func (*DFElectionExtended) ProtoMessage()               {}
+func (*DFElectionExtended) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{62} }
+
+func (m *DFElectionExtended) GetDFAlgorithm() uint32 {
+	if m != nil {
+		return m.DFAlgorithm
+	}
+	return 0
+}
+
+func (m *DFElectionExtended) GetBitmap() uint32 {
+	if m != nil {
+		return m.Bitmap
+	}
+	return 0
+}
+
 type UnknownExtended struct {
 	Type  uint32 `protobuf:"varint,1,opt,name=type" json:"type,omitempty"`
 	Value []byte `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
@@ -2299,7 +2324,7 @@ type UnknownExtended struct {
 func (m *UnknownExtended) Reset()                    { *m = UnknownExtended{} }
 func (m *UnknownExtended) String() string            { return proto.CompactTextString(m) }
 func (*UnknownExtended) ProtoMessage()               {}
-func (*UnknownExtended) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{62} }
+func (*UnknownExtended) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{63} }
 
 func (m *UnknownExtended) GetType() uint32 {
 	if m != nil {
@@ -2330,6 +2355,7 @@ type ExtendedCommunitiesAttribute struct {
 	// - RedirectIPv4AddressSpecificExtended
 	// - RedirectFourOctetAsSpecificExtended
 	// - TrafficRemarkExtended
+	// - DFElectionExtended
 	// - UnknownExtended
 	Communities []*google_protobuf.Any `protobuf:"bytes,1,rep,name=communities" json:"communities,omitempty"`
 }
@@ -3853,6 +3879,7 @@ func init() {
 	proto.RegisterType((*RedirectIPv4AddressSpecificExtended)(nil), "gobgpapi.RedirectIPv4AddressSpecificExtended")
 	proto.RegisterType((*RedirectFourOctetAsSpecificExtended)(nil), "gobgpapi.RedirectFourOctetAsSpecificExtended")
 	proto.RegisterType((*TrafficRemarkExtended)(nil), "gobgpapi.TrafficRemarkExtended")
+	proto.RegisterType((*DFElectionExtended)(nil), "gobgpapi.DFElectionExtended")
 	proto.RegisterType((*UnknownExtended)(nil), "gobgpapi.UnknownExtended")
 	proto.RegisterType((*ExtendedCommunitiesAttribute)(nil), "gobgpapi.ExtendedCommunitiesAttribute")
 	proto.RegisterType((*As4PathAttribute)(nil), "gobgpapi.As4PathAttribute")

@@ -47,6 +47,7 @@ const (
 	ctEncap
 	ctESILabel
 	ctRouterMAC
+	ctDFElection
 	ctDefaultGateway
 	ctValid
 	ctNotFound
@@ -65,6 +66,7 @@ var extCommNameMap = map[extCommType]string{
 	ctEncap:          "encap",
 	ctESILabel:       "esi-label",
 	ctRouterMAC:      "router-mac",
+	ctDFElection:     "DF-Election",
 	ctDefaultGateway: "default-gateway",
 	ctValid:          "valid",
 	ctNotFound:       "not-found",
@@ -83,6 +85,7 @@ var extCommValueMap = map[string]extCommType{
 	extCommNameMap[ctEncap]:          ctEncap,
 	extCommNameMap[ctESILabel]:       ctESILabel,
 	extCommNameMap[ctRouterMAC]:      ctRouterMAC,
+	extCommNameMap[ctDFElection]:     ctDFElection,
 	extCommNameMap[ctDefaultGateway]: ctDefaultGateway,
 	extCommNameMap[ctValid]:          ctValid,
 	extCommNameMap[ctNotFound]:       ctNotFound,
@@ -250,6 +253,26 @@ func routerMacParser(args []string) ([]bgp.ExtendedCommunityInterface, error) {
 	return []bgp.ExtendedCommunityInterface{o}, nil
 }
 
+func DFElectionParser(args []string) ([]bgp.ExtendedCommunityInterface, error) {
+	if len(args) < 2 || args[0] != extCommNameMap[ctDFElection] {
+		return nil, fmt.Errorf("invalid DF-election")
+	}
+	alg, err := strconv.ParseUint(args[1], 10, 8)
+	if err != nil {
+		return nil, err
+	}
+	bitmap, err := strconv.ParseUint(args[2], 10, 16)
+	if err != nil {
+		return nil, err
+	}
+
+	o := &bgp.DFElectionExtended{
+		DFAlgorithm:      uint8(alg),
+		Bitmap:           uint16(bitmap),
+	}
+	return []bgp.ExtendedCommunityInterface{o}, nil
+}
+
 func defaultGatewayParser(args []string) ([]bgp.ExtendedCommunityInterface, error) {
 	if len(args) < 1 || args[0] != extCommNameMap[ctDefaultGateway] {
 		return nil, fmt.Errorf("invalid default-gateway")
@@ -297,6 +320,7 @@ var extCommParserMap = map[extCommType]func([]string) ([]bgp.ExtendedCommunityIn
 	ctEncap:          encapParser,
 	ctESILabel:       esiLabelParser,
 	ctRouterMAC:      routerMacParser,
+	ctDFElection:     DFElectionParser,
 	ctDefaultGateway: defaultGatewayParser,
 	ctValid:          validationParser,
 	ctNotFound:       validationParser,

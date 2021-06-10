@@ -427,6 +427,11 @@ message MacMobilityExtended {
 
 message RouterMacExtended { string mac = 1; }
 
+message DFElectionExtended {
+  uint32 DF_algorithm = 1;
+  uint32 bitmap = 2;
+}
+
 message TrafficRateExtended {
   uint32 as = 1;
   float rate = 2;
@@ -474,6 +479,7 @@ message ExtendedCommunitiesAttribute {
   // - RedirectIPv4AddressSpecificExtended
   // - RedirectFourOctetAsSpecificExtended
   // - TrafficRemarkExtended
+  // - DFElectionExtended
   // - UnknownExtended
   repeated google.protobuf.Any communities = 1;
 }
