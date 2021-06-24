@@ -2295,6 +2295,7 @@ func (m *TrafficRemarkExtended) GetDscp() uint32 {
 type DFElectionExtended struct {
 	DFAlgorithm    uint32   `protobuf:"varint,1,opt,name=DF_algorithm,json=DF_algorithm" json:"DF_algorithm,omitempty"`
 	Bitmap         uint32   `protobuf:"varint,2,opt,name=bitmap,json=bitmap" json:"bitmap,omitempty"`
+	DFPref         []byte   `protobuf:"varint,3,opt,name=DF_pref,json=DF_pref" json:"DF_pref,omitempty"`
 }
 
 func (m *DFElectionExtended) Reset()                    { *m = DFElectionExtended{} }
@@ -2314,6 +2315,13 @@ func (m *DFElectionExtended) GetBitmap() uint32 {
 		return m.Bitmap
 	}
 	return 0
+}
+
+func (m *DFElectionExtended) GetDFPref() []byte {
+	if m != nil {
+		return m.DFPref
+	}
+	return nil
 }
 
 type UnknownExtended struct {
@@ -2355,7 +2363,6 @@ type ExtendedCommunitiesAttribute struct {
 	// - RedirectIPv4AddressSpecificExtended
 	// - RedirectFourOctetAsSpecificExtended
 	// - TrafficRemarkExtended
-	// - DFElectionExtended
 	// - UnknownExtended
 	Communities []*google_protobuf.Any `protobuf:"bytes,1,rep,name=communities" json:"communities,omitempty"`
 }

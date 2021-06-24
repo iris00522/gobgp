@@ -266,9 +266,12 @@ func DFElectionParser(args []string) ([]bgp.ExtendedCommunityInterface, error) {
 		return nil, err
 	}
 
+	pref:=args[3]
+
 	o := &bgp.DFElectionExtended{
 		DFAlgorithm:      uint8(alg),
 		Bitmap:           uint16(bitmap),
+		DFPref:           []byte(pref),
 	}
 	return []bgp.ExtendedCommunityInterface{o}, nil
 }

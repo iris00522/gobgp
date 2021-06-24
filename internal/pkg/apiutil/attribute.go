@@ -1050,6 +1050,7 @@ func NewExtendedCommunitiesAttributeFromNative(a *bgp.PathAttributeExtendedCommu
 			community = &api.DFElectionExtended{
 				DFAlgorithm:    uint32(v.DFAlgorithm),
 				Bitmap:         uint32(v.Bitmap),
+				DFPref:         v.DFPref,
 			}
 		case *bgp.UnknownExtended:
 			community = &api.UnknownExtended{
@@ -1117,7 +1118,7 @@ func unmarshalExComm(a *api.ExtendedCommunitiesAttribute) (*bgp.PathAttributeExt
 		case *api.TrafficRemarkExtended:
 			community = bgp.NewTrafficRemarkExtended(uint8(v.Dscp))
 		case *api.DFElectionExtended:
-			community = bgp.NewDFElectiosExtended(uint8(v.DFAlgorithm), uint16(v.Bitmap))
+			community = bgp.NewDFElectionsExtended(uint8(v.DFAlgorithm), uint16(v.Bitmap), v.DFPref)
 		case *api.UnknownExtended:
 			community = bgp.NewUnknownExtended(bgp.ExtendedCommunityAttrType(v.Type), v.Value)
 		}

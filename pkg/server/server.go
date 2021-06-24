@@ -1991,6 +1991,19 @@ func (s *BgpServer) fixupApiPath(vrfId string, pathList []*table.Path) error {
 						path.SetExtCommunities([]bgp.ExtendedCommunityInterface{rt}, false)
 					}
 				}
+				found = false
+				for _, extComm := range path.GetExtCommunities() {
+					if _, found = extComm.(*bgp.DFElectionExtended); found {
+						break
+					}
+				}
+				if !found {
+					algorithm := uint8(2)
+					bitmap := uint16(0)
+					pref := []byte{0x00, 0x7f, 0xff}
+					rt1 := &bgp.DFElectionExtended{DFAlgorithm: algorithm, Bitmap: bitmap, DFPref: pref}
+					path.SetExtCommunities([]bgp.ExtendedCommunityInterface{rt1}, false)
+				}
 			}
 		}
 	}

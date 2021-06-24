@@ -10798,6 +10798,7 @@ func NewRoutersMacExtended(mac string) *RouterMacExtended {
 type DFElectionExtended struct {
 	DFAlgorithm uint8
 	Bitmap uint16
+	DFPref []byte
 }
 
 func (e *DFElectionExtended) Serialize() ([]byte, error) {
@@ -10807,6 +10808,7 @@ func (e *DFElectionExtended) Serialize() ([]byte, error) {
 	buf[2] = byte(e.DFAlgorithm & 0x1f)
 	buf[3] = byte((e.Bitmap >> 16) & 0xff)
 	buf[4] = byte((e.Bitmap >> 8) & 0xff)
+	copy(buf[5:8],e.DFPref[0:3])
 	return buf, nil
 }
 
@@ -10814,6 +10816,7 @@ func (e *DFElectionExtended) String() string {
 	buf := bytes.NewBuffer(make([]byte, 0, 32))
 	buf.WriteString(fmt.Sprintf("DF Algorithm: %d ", e.DFAlgorithm))
 	buf.WriteString(fmt.Sprintf("DF Bitmap: %d", e.Bitmap))
+	buf.WriteString(fmt.Sprintf("DF Pref: %d", e.DFPref))
 	return buf.String()
 }
 
@@ -10824,11 +10827,13 @@ func (e *DFElectionExtended) MarshalJSON() ([]byte, error) {
 		Subtype ExtendedCommunityAttrSubType `json:"subtype"`
 		DFalgorithm uint8                    `json:"DF_algorithm"`
 		Bitmap uint16                        `json:"bitmap"`
+		DFpref []byte                        `json:"DF_Pref"`
 	}{
 		Type:     t,
 		Subtype:  s,
 		DFalgorithm: e.DFAlgorithm,
 		Bitmap: e.Bitmap,
+		DFpref: e.DFPref[0:3],
 	})
 }
 
@@ -10836,10 +10841,11 @@ func (e *DFElectionExtended) GetTypes() (ExtendedCommunityAttrType, ExtendedComm
 	return EC_TYPE_EVPN, EC_SUBTYPE_DF_ELECTION
 }
 
-func NewDFElectiosExtended(alg uint8, bitmap uint16) *DFElectionExtended {
+func NewDFElectionsExtended(alg uint8, bitmap uint16, pref []byte) *DFElectionExtended {
 	return &DFElectionExtended{
 		DFAlgorithm: alg,
 		Bitmap: bitmap,
+		DFPref: pref,
 	}
 }
 
@@ -10880,11 +10886,14 @@ func parseEvpnExtended(data []byte) (ExtendedCommunityInterface, error) {
 	case EC_SUBTYPE_DF_ELECTION:
 		var algorithm uint8
 		var bitmap uint16
+		pref := make([]byte, 3)
 		algorithm = uint8(data[2])
 		bitmap = uint16(data[3])<<8 | uint16(data[4])
+		copy(pref[0:3],data[5:8])
 		return &DFElectionExtended{
 			DFAlgorithm: algorithm,
 			Bitmap: bitmap,
+			DFPref: pref,
 		}, nil
 	}
 	return nil, NewMessageError(BGP_ERROR_UPDATE_MESSAGE_ERROR, BGP_ERROR_SUB_MALFORMED_ATTRIBUTE_LIST, nil, fmt.Sprintf("unknown evpn subtype: %d", subType))
